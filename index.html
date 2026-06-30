@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Room Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --ink: #1C1C1E;
+    --ink-muted: #8A8782;
+    --line: #E8E6E1;
+    --accent: #0A5C46;
+    --accent-wash: #EAF1EE;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom);
+    min-height: 100vh;
+  }
+  .header { padding: 32px 24px 24px; border-bottom: 1px solid var(--line); }
+  .hotel-name { font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; font-weight: 500; }
+  .header-sub { color: var(--ink-muted); font-size: 14px; margin-top: 4px; }
+  .room-bar { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  .room-label { font-size: 13px; font-weight: 500; color: var(--ink-muted); white-space: nowrap; }
+  .room-input { flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 16px; font-weight: 600; color: var(--ink); background: var(--white); width: 100%; max-width: 90px; text-align: center; }
+  .room-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .section { padding: 32px 24px 12px; }
+  .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }
+  .item-list { border-top: 1px solid var(--line); }
+  .item-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; border-bottom: 1px solid var(--line); }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-family: 'Source Serif 4', Georgia, serif; font-size: 17px; font-weight: 500; }
+  .item-desc { font-size: 13.5px; color: var(--ink-muted); margin-top: 3px; }
+  .item-price { font-size: 14px; font-weight: 600; margin-top: 8px; }
+  .qty-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); font-size: 18px; color: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .qty-stepper { display: flex; align-items: center; gap: 12px; }
+  .qty-count { font-size: 15px; font-weight: 600; min-width: 16px; text-align: center; }
+  .add-btn { border: 1px solid var(--accent); color: var(--accent); background: var(--white); border-radius: 8px; padding: 8px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .order-bar { position: sticky; bottom: 0; z-index: 30; background: var(--white); border-top: 1px solid var(--line); padding: 16px 24px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); display: none; box-shadow: 0 -4px 16px rgba(0,0,0,0.04); }
+  .order-bar.visible { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .order-bar-info { font-size: 13px; color: var(--ink-muted); }
+  .order-bar-total { font-size: 17px; font-weight: 700; }
+  .place-order-btn { background: var(--accent); color: var(--white); border: none; border-radius: 8px; padding: 13px 24px; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .confirm-screen { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+  .confirm-screen.visible { display: flex; }
+  .confirm-mark { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-wash); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .confirm-title { font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 500; margin-bottom: 8px; }
+  .confirm-eta { font-size: 15px; color: var(--ink-muted); margin-bottom: 32px; max-width: 280px; }
+  .confirm-eta strong { color: var(--ink); font-weight: 600; }
+  .confirm-detail { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 16px 0; width: 100%; max-width: 280px; margin-bottom: 32px; }
+  .confirm-detail-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 4px 0; }
+  .confirm-detail-row span:first-child { color: var(--ink-muted); }
+  .confirm-detail-row span:last-child { font-weight: 600; }
+  .confirm-close { background: none; border: none; color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 16px; }
+  .footer-note { text-align: center; font-size: 12.5px; color: var(--ink-muted); padding: 32px 24px 48px; }
+</style>
+</head>
+<body>
 
+<header class="header">
+  <div class="hotel-name">Your Hotel Name</div>
+  <div class="header-sub">In-room service · 7:00 AM – 11:00 PM</div>
+</header>
+
+<div class="room-bar">
+  <label class="room-label" for="room-number">Room no.</label>
+  <input type="tel" inputmode="numeric" id="room-number" class="room-input" placeholder="—" maxlength="4">
+</div>
+
+<section class="section"><div class="section-title">Menu</div></section>
+<div class="item-list" id="item-list"></div>
+
+<p class="footer-note">Orders are confirmed by hotel staff on WhatsApp. Pay by UPI on confirmation, or settle with cash at checkout.</p>
+
+<div class="order-bar" id="order-bar">
+  <div>
+    <div class="order-bar-info" id="order-bar-count">0 items</div>
+    <div class="order-bar-total" id="order-bar-total">₹0</div>
+  </div>
+  <button class="place-order-btn" id="place-order-btn">Place order</button>
+</div>
+
+<div class="confirm-screen" id="confirm-screen">
+  <div class="confirm-mark">✓</div>
+  <div class="confirm-title">Order sent</div>
+  <div class="confirm-eta">Staff have been notified. Expect it <strong id="eta-text">by 3:40 PM</strong>.</div>
+  <div class="confirm-detail">
+    <div class="confirm-detail-row"><span>Room</span><span id="confirm-room">—</span></div>
+    <div class="confirm-detail-row"><span>Items</span><span id="confirm-items">—</span></div>
+    <div class="confirm-detail-row"><span>Total</span><span id="confirm-total">₹0</span></div>
+  </div>
+  <button class="confirm-close" id="confirm-close">Back to menu</button>
+</div>
+
+<script>
+  const ITEMS = [
+    { id: 'i1', name: 'Filter coffee', desc: 'South Indian style, served hot', price: 80 },
+    { id: 'i2', name: 'Masala dosa', desc: 'With sambar and coconut chutney', price: 150 },
+    { id: 'i3', name: 'Toast & eggs', desc: 'Two eggs any style, butter toast', price: 120 },
+    { id: 'i4', name: 'Fresh fruit bowl', desc: "Seasonal fruit, chef's selection", price: 100 },
+    { id: 'i5', name: 'Late checkout (2 PM)', desc: 'Subject to availability', price: 500 },
+    { id: 'i6', name: 'Extra towels', desc: 'Delivered within 20 minutes', price: 0 },
+  ];
+  const PREP_MINUTES = 25;
+  const cart = {};
+  const itemList = document.getElementById('item-list');
+  const orderBar = document.getElementById('order-bar');
+  const orderBarCount = document.getElementById('order-bar-count');
+  const orderBarTotal = document.getElementById('order-bar-total');
+  const placeOrderBtn = document.getElementById('place-order-btn');
+  const roomInput = document.getElementById('room-number');
+  const confirmScreen = document.getElementById('confirm-screen');
+  const confirmClose = document.getElementById('confirm-close');
+
+  function renderItems() {
+    itemList.innerHTML = '';
+    ITEMS.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      const priceLabel = item.price === 0 ? 'No charge' : `₹${item.price}`;
+      row.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-desc">${item.desc}</div>
+          <div class="item-price">${priceLabel}</div>
+        </div>
+        <div class="item-action" data-id="${item.id}"></div>`;
+      itemList.appendChild(row);
+      renderItemAction(item.id);
+    });
+  }
+
+  function renderItemAction(id) {
+    const container = itemList.querySelector(`.item-action[data-id="${id}"]`);
+    const qty = cart[id] || 0;
+    if (qty === 0) {
+      container.innerHTML = `<button class="add-btn" data-id="${id}">Add</button>`;
+      container.querySelector('.add-btn').addEventListener('click', () => updateQty(id, 1));
+    } else {
+      container.innerHTML = `
+        <div class="qty-stepper">
+          <button class="qty-btn" data-action="dec" data-id="${id}">–</button>
+          <span class="qty-count">${qty}</span>
+          <button class="qty-btn" data-action="inc" data-id="${id}">+</button>
+        </div>`;
+      container.querySelector('[data-action="dec"]').addEventListener('click', () => updateQty(id, -1));
+      container.querySelector('[data-action="inc"]').addEventListener('click', () => updateQty(id, 1));
+    }
+  }
+
+  function updateQty(id, delta) {
+    const current = cart[id] || 0;
+    const next = Math.max(0, current + delta);
+    if (next === 0) delete cart[id]; else cart[id] = next;
+    renderItemAction(id);
+    renderOrderBar();
+  }
+
+  function renderOrderBar() {
+    const ids = Object.keys(cart);
+    const totalItems = ids.reduce((sum, id) => sum + cart[id], 0);
+    const totalPrice = ids.reduce((sum, id) => sum + ITEMS.find(i => i.id === id).price * cart[id], 0);
+    if (totalItems === 0) { orderBar.classList.remove('visible'); return; }
+    orderBar.classList.add('visible');
+    orderBarCount.textContent = `${totalItems} item${totalItems > 1 ? 's' : ''}`;
+    orderBarTotal.textContent = `₹${totalPrice}`;
+  }
+
+  function computeEta() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + PREP_MINUTES);
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12; hours = hours === 0 ? 12 : hours;
+    return `${hours}:${minutes} ${ampm}`;
+  }
+
+  placeOrderBtn.addEventListener('click', () => {
+    const room = roomInput.value.trim();
+    if (!room) { roomInput.focus(); roomInput.style.borderColor = '#C0392B'; roomInput.placeholder = 'Required'; return; }
+    const ids = Object.keys(cart);
+    const totalPrice = ids.reduce((sum, id) => sum + ITEMS.find(i => i.id === id).price * cart[id], 0);
+    const itemNames = ids.map(id => {
+      const item = ITEMS.find(i => i.id === id);
+      return `${item.name}${cart[id] > 1 ? ` ×${cart[id]}` : ''}`;
+    }).join(', ');
+
+    document.getElementById('eta-text').textContent = `by ${computeEta()}`;
+    document.getElementById('confirm-room').textContent = room;
+    document.getElementById('confirm-items').textContent = itemNames;
+    document.getElementById('confirm-total').textContent = `₹${totalPrice}`;
+    confirmScreen.classList.add('visible');
+  });
+
+  confirmClose.addEventListener('click', () => {
+    confirmScreen.classList.remove('visible');
+    Object.keys(cart).forEach(id => delete cart[id]);
+    renderItems();
+    renderOrderBar();
+  });
+
+  roomInput.addEventListener('input', () => { roomInput.style.borderColor = ''; roomInput.placeholder = '—'; });
+
+  renderItems();
+</script>
+</body>
+</html>
