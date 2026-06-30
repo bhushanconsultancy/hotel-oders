@@ -67,14 +67,10 @@
 </head>
 <body>
 
-<!-- ============================================ -->
-<!-- EDIT HERE #1: Hotel name and hours -->
-<!-- ============================================ -->
 <header class="header">
   <div class="hotel-name">[ HOTEL NAME GOES HERE ]</div>
   <div class="header-sub">In-room service · 7:00 AM – 11:00 PM</div>
 </header>
-<!-- ============================================ -->
 
 <div class="room-bar">
   <label class="room-label" for="room-number">Room no.</label>
@@ -107,14 +103,6 @@
 </div>
 
 <script>
-  // ================================================================
-  // EDIT HERE #2: Menu items
-  // One line per item. Copy a line, change the 4 values, keep format.
-  //   id    -> i1, i2, i3... must be unique, just keep counting up
-  //   name  -> what the guest sees as the item name
-  //   desc  -> one short line describing it
-  //   price -> number only, no ₹ symbol. Use 0 if it's free.
-  // ================================================================
   const ITEMS = [
     { id: 'i1', name: '[ ITEM NAME ]', desc: '[ short description ]', price: 0 },
     { id: 'i2', name: '[ ITEM NAME ]', desc: '[ short description ]', price: 0 },
@@ -123,10 +111,8 @@
     { id: 'i5', name: '[ ITEM NAME ]', desc: '[ short description ]', price: 0 },
     { id: 'i6', name: '[ ITEM NAME ]', desc: '[ short description ]', price: 0 },
   ];
-  // ================================================================
-  // END EDIT HERE #2
-  // ================================================================
 
+  const WEBHOOK_URL = 'https://hook.us2.make.com/y42qm1o6bfob9j1a5dometfm7ai2352r';
   const PREP_MINUTES = 25;
   const cart = {};
   const itemList = document.getElementById('item-list');
@@ -211,6 +197,8 @@
       const item = ITEMS.find(i => i.id === id);
       return `${item.name}${cart[id] > 1 ? ` ×${cart[id]}` : ''}`;
     }).join(', ');
+
+    fetch(WEBHOOK_URL + '?room=' + encodeURIComponent(room) + '&items=' + encodeURIComponent(itemNames) + '&total=' + totalPrice);
 
     document.getElementById('eta-text').textContent = `by ${computeEta()}`;
     document.getElementById('confirm-room').textContent = room;
